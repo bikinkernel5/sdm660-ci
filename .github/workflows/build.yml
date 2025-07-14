@@ -28,14 +28,13 @@ jobs:
          make sdm660_defconfig
          make -j$(nproc)
 
-
       - name: Build U-Boot
         run: |
          rm -rf u-boot
          git clone --depth=1 https://github.com/sdm660-mainline/u-boot.git
          cd u-boot
          export CROSS_COMPILE=aarch64-linux-gnu-
-         make sdm660_defconfig
+         make qcom_defconfig
          make -j$(nproc)
 
       - name: Build lk2nd

@@ -1,0 +1,24 @@
+architecture: arm64
+
+actions:
+  - action: unpack
+    file: ../output/rootfs.tar.xz
+
+  - action: run
+    script: |
+      echo "nameserver 1.1.1.1" > /etc/resolv.conf
+    chroot: false
+
+  - action: run
+    description: Salin kernel dan DTB
+    script: |
+      mkdir -p /boot/dtbs/qcom/
+      cp /build/linux/arch/arm64/boot/Image /boot/vmlinuz
+      cp /build/linux/arch/arm64/boot/dts/qcom/whyred.dtb /boot/dtbs/qcom/
+    chroot: false
+
+  - action: pack
+    description: Buat rootfs.img dari hasil unpack + modifikasi
+    image: rootfs.img
+    filesystem: ext4
+    size: 2048MB

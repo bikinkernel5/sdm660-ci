@@ -1,0 +1,52 @@
+name: Build Full Stack
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source + Submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y gcc-aarch64-linux-gnu make bc bison flex \
+                              qemu-user-static debos curl git
+
+      - name: Build Kernel
+        run: |
+          cd linux
+          export ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-
+          make whyred_defconfig
+          make -j$(nproc)
+
+      - name: Build U-Boot
+        run: |
+          cd u-boot
+          export CROSS_COMPILE=aarch64-linux-gnu-
+          make sdm660_defconfig
+          make -j$(nproc)
+
+      - name: Build lk2nd
+        run: |
+          cd lk2nd
+          export CROSS_COMPILE=aarch64-linux-gnu-
+          make -j$(nproc)
+
+      - name: Build RootFS with Debos
+        run: |
+          cd mobian-recipes
+          debos -m aarch64 devices/pinephone/image.yaml
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: |
+            **/*.img
+            **/*.bin

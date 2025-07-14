@@ -1,4 +1,4 @@
-name: Build Full Stack
+name: Build Full Stack (Whyred)
 
 on:
   workflow_dispatch:
@@ -6,6 +6,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Source + Submodules
         uses: actions/checkout@v4
@@ -16,7 +17,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y gcc-aarch64-linux-gnu make bc bison flex \
-                              qemu-user-static debos curl git
+                              libssl-dev qemu-user-static debos curl git
 
       - name: Build Kernel
         run: |
@@ -38,10 +39,10 @@ jobs:
           export CROSS_COMPILE=aarch64-linux-gnu-
           make -j$(nproc)
 
-      - name: Build RootFS with Debos
+      - name: Build RootFS with Debos (Whyred)
         run: |
           cd mobian-recipes
-          debos -m aarch64 devices/pinephone/image.yaml
+          debos -m aarch64 devices/whyred/image.yaml
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3

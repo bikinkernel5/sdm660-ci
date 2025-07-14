@@ -1,6 +1,3 @@
-[submodule "linux"]
-  path = linux
-  url = https://github.com/sdm660-mainline/linux.git
 [submodule "u-boot"]
   path = u-boot
   url = https://github.com/sdm660-mainline/u-boot.git

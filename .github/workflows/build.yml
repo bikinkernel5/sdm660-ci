@@ -19,12 +19,14 @@ jobs:
           sudo apt install -y gcc-aarch64-linux-gnu make bc bison flex \
                               libssl-dev qemu-user-static debos curl git
 
-      - name: Build Kernel
+      - name: Clone and Build Kernel
         run: |
-          cd linux
-          git clone --depth=1 https://github.com/sdm660-mainline/linux.git linux
-          make sdm660_defconfig
-          make -j$(nproc)
+         git clone --depth=1 --branch qcom-sdm660-6.15.y https://github.com/sdm660-mainline/linux.git
+         cd linux
+         export ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-
+         make sdm660_defconfig
+         make -j$(nproc)
+
 
       - name: Build U-Boot
         run: |

@@ -22,7 +22,7 @@ jobs:
       - name: Build Kernel
         run: |
           cd linux
-          export ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-
+          git clone --depth=1 https://github.com/sdm660-mainline/linux.git linux
           make sdm660_defconfig
           make -j$(nproc)
 

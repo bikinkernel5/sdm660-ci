@@ -28,6 +28,11 @@ jobs:
          make sdm660_defconfig
          make -j$(nproc)
 
+      - name: Install U-Boot dependencies
+        run: |
+         sudo apt-get update
+         sudo apt-get install -y libgnutls28-dev
+
       - name: Build U-Boot
         run: |
          rm -rf u-boot
@@ -36,8 +41,7 @@ jobs:
          export CROSS_COMPILE=aarch64-linux-gnu-
          make qcom_defconfig
          make -j$(nproc)
-
-
+         
       - name: Build lk2nd
         run: |
          rm -rf lk2nd

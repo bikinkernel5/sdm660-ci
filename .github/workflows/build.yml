@@ -17,48 +17,88 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y gcc-aarch64-linux-gnu make bc bison flex \
-                              libssl-dev qemu-user-static debos curl git
+                              libssl-dev qemu-user-static debos curl git \
+                              libgnutls28-dev
 
+      # 1. Build Kernel
       - name: Clone and Build Kernel
         run: |
-         rm -rf linux
-         git clone --depth=1 --branch qcom-sdm660-6.15.y https://github.com/sdm660-mainline/linux.git
-         cd linux
-         export ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-
-         make sdm660_defconfig
-         make -j$(nproc)
+          rm -rf linux
+          git clone --depth=1 --branch qcom-sdm660-6.15.y https://github.com/sdm660-mainline/linux.git
+          cd linux
+          export ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-
+          make sdm660_defconfig
+          make -j$(nproc)
 
-      - name: Install U-Boot dependencies
-        run: |
-         sudo apt-get update
-         sudo apt-get install -y libgnutls28-dev
-
+      # 2. Build U-Boot
       - name: Build U-Boot
         run: |
-         rm -rf u-boot
-         git clone --depth=1 https://github.com/u-boot/u-boot.git u-boot
-         cd u-boot
-         export CROSS_COMPILE=aarch64-linux-gnu-
-         make qcom_defconfig
-         make -j$(nproc)
-         
-      - name: Build lk2nd
+          rm -rf u-boot
+          git clone --depth=1 https://github.com/u-boot/u-boot.git u-boot
+          cd u-boot
+          export CROSS_COMPILE=aarch64-linux-gnu-
+          make qcom_defconfig
+          make -j$(nproc)
+
+      # 3. Prepare Kernel Output for Debos
+      - name: Prepare Kernel Output for Debos
         run: |
-         rm -rf lk2nd
-         git clone --depth=1 https://github.com/sdm660-mainline/lk2nd.git
-         cd lk2nd
-         printf "PROJECT := msm8953/whyred\nARCH := arm64\nCROSS_COMPILE := aarch64-linux-gnu-\n" > local.mk
-         make -j$(nproc)
+          mkdir -p out
+          cp linux/arch/arm64/boot/Image out/
+          cp linux/arch/arm64/boot/dts/qcom/whyred.dtb out/
 
+      # 4. Inject image.yaml for Debos
+      - name: Inject image.yaml for Whyred
+        run: |
+          rm -rf mobian-recipes
+          git clone --depth=1 https://salsa.debian.org/Mobian-team/mobian-recipes.git
+          mkdir -p mobian-recipes/devices/whyred/
+          cat << 'EOF' > mobian-recipes/devices/whyred/image.yaml
+actions:
+  - action: unpack
+    description: "Copy kernel"
+    file: ../../out/Image
+    source: plain
+    compression: none
 
+  - action: unpack
+    description: "Copy DTB"
+    file: ../../out/whyred.dtb
+    source: plain
+    compression: none
+
+  - action: run
+    script: |
+      mkdir -p /etc
+      echo "nameserver 1.1.1.1" > /etc/resolv.conf
+    chroot: false
+
+  - action: debootstrap
+    suite: bookworm
+    components:
+      - main
+    mirror: http://deb.debian.org/debian
+    variant: minbase
+    keyring-package: debian-archive-keyring
+
+  - action: overlay
+    source: overlay
+
+  - action: pack
+    description: Create rootfs image
+    file: whyred-rootfs.img
+    format: ext4
+    size: 2GB
+EOF
+
+      # 5. Build RootFS with Debos
       - name: Build RootFS with Debos (Whyred)
         run: |
-         rm -rf mobian-recipes
-         git clone --depth=1 https://salsa.debian.org/Mobian-team/mobian-recipes.git
-         cd mobian-recipes
-         debos -m aarch64 devices/whyred/image.yaml
+          sudo apt-get update
+          sudo apt-get install -y debos qemu-user-static
+          debos -m aarch64 mobian-recipes/devices/whyred/image.yaml
 
-
+      # 6. Upload Artifact Output
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:

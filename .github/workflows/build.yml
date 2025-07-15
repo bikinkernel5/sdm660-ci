@@ -39,11 +39,12 @@ jobs:
           make qcom_defconfig
           make -j$(nproc)
 
-      - name: Prepare Kernel Output
+      - name: Prepare Kernel Output for Debos
         run: |
-          mkdir -p out
-          cp linux/arch/arm64/boot/Image out/
-          cp linux/arch/arm64/boot/dts/qcom/whyred.dtb out/
+         mkdir -p out
+         cp linux/arch/arm64/boot/Image out/
+         find linux -name "sdm636-xiaomi-whyred.dtb" -exec cp {} out/whyred.dtb \;
+
 
       - name: Prepare Mobian Recipes and Image YAML
         run: |

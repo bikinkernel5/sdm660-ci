@@ -47,9 +47,8 @@ jobs:
          rm -rf lk2nd
          git clone --depth=1 https://github.com/sdm660-mainline/lk2nd.git
          cd lk2nd
-         export CROSS_COMPILE=aarch64-linux-gnu-
-         export ARCH=arm64
-         make PROJECT=msm8953/whyred -j$(nproc)
+         printf "PROJECT := msm8953/whyred\nARCH := arm64\nCROSS_COMPILE := aarch64-linux-gnu-\n" > local.mk
+         make -j$(nproc)
 
 
       - name: Build RootFS with Debos (Whyred)

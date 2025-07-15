@@ -31,11 +31,12 @@ jobs:
       - name: Build U-Boot
         run: |
          rm -rf u-boot
-         git clone --depth=1 --branch v2025.04-sdm660 https://github.com/sdm660-mainline/u-boot.git
+         git clone --depth=1 https://github.com/u-boot/u-boot.git u-boot
          cd u-boot
          export CROSS_COMPILE=aarch64-linux-gnu-
-         make msm8953_msm8917_defconfig
+         make qcom_defconfig
          make -j$(nproc)
+
 
       - name: Build lk2nd
         run: |

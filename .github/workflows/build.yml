@@ -13,7 +13,7 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install Dependencies
+      - name: Install All Dependencies
         run: |
           sudo apt update
           sudo apt install -y gcc-aarch64-linux-gnu make bc bison flex \
@@ -47,49 +47,49 @@ jobs:
           cp linux/arch/arm64/boot/Image out/
           cp linux/arch/arm64/boot/dts/qcom/whyred.dtb out/
 
-      # 4. Inject image.yaml for Debos
-      - name: Inject image.yaml for Whyred
+      # 4. Inject image.yaml for Mobian (Whyred)
+      - name: Inject image.yaml
         run: |
           rm -rf mobian-recipes
           git clone --depth=1 https://salsa.debian.org/Mobian-team/mobian-recipes.git
           mkdir -p mobian-recipes/devices/whyred/
-          cat << 'EOF' > mobian-recipes/devices/whyred/image.yaml
-actions:
-  - action: unpack
-    description: "Copy kernel"
-    file: ../../out/Image
-    source: plain
-    compression: none
-
-  - action: unpack
-    description: "Copy DTB"
-    file: ../../out/whyred.dtb
-    source: plain
-    compression: none
-
-  - action: run
-    script: |
-      mkdir -p /etc
-      echo "nameserver 1.1.1.1" > /etc/resolv.conf
-    chroot: false
-
-  - action: debootstrap
-    suite: bookworm
-    components:
-      - main
-    mirror: http://deb.debian.org/debian
-    variant: minbase
-    keyring-package: debian-archive-keyring
-
-  - action: overlay
-    source: overlay
-
-  - action: pack
-    description: Create rootfs image
-    file: whyred-rootfs.img
-    format: ext4
-    size: 2GB
-EOF
+          printf '%s\n' \
+"actions:" \
+"  - action: unpack" \
+"    description: \"Copy kernel\"" \
+"    file: ../../out/Image" \
+"    source: plain" \
+"    compression: none" \
+"" \
+"  - action: unpack" \
+"    description: \"Copy DTB\"" \
+"    file: ../../out/whyred.dtb" \
+"    source: plain" \
+"    compression: none" \
+"" \
+"  - action: run" \
+"    script: |" \
+"      mkdir -p /etc" \
+"      echo \"nameserver 1.1.1.1\" > /etc/resolv.conf" \
+"    chroot: false" \
+"" \
+"  - action: debootstrap" \
+"    suite: bookworm" \
+"    components:" \
+"      - main" \
+"    mirror: http://deb.debian.org/debian" \
+"    variant: minbase" \
+"    keyring-package: debian-archive-keyring" \
+"" \
+"  - action: overlay" \
+"    source: overlay" \
+"" \
+"  - action: pack" \
+"    description: Create rootfs image" \
+"    file: whyred-rootfs.img" \
+"    format: ext4" \
+"    size: 2GB" \
+> mobian-recipes/devices/whyred/image.yaml
 
       # 5. Build RootFS with Debos
       - name: Build RootFS with Debos (Whyred)

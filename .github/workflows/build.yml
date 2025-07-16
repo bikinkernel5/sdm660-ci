@@ -51,6 +51,7 @@ jobs:
           rm -rf mobian-recipes
           git clone --depth=1 https://salsa.debian.org/Mobian-team/mobian-recipes.git
           mkdir -p mobian-recipes/devices/whyred/
+          echo "architecture: arm64" > mobian-recipes/devices/whyred/image.yaml
           echo "actions:" > mobian-recipes/devices/whyred/image.yaml
           echo "  - action: unpack" >> mobian-recipes/devices/whyred/image.yaml
           echo "    description: Copy kernel" >> mobian-recipes/devices/whyred/image.yaml

@@ -52,7 +52,7 @@ jobs:
           git clone --depth=1 https://salsa.debian.org/Mobian-team/mobian-recipes.git
           mkdir -p mobian-recipes/devices/whyred/
           echo "architecture: arm64" > mobian-recipes/devices/whyred/image.yaml
-          echo "actions:" > mobian-recipes/devices/whyred/image.yaml
+          echo "actions:" >> mobian-recipes/devices/whyred/image.yaml
           echo "  - action: unpack" >> mobian-recipes/devices/whyred/image.yaml
           echo "    description: Copy kernel" >> mobian-recipes/devices/whyred/image.yaml
           echo "    file: ../../out/Image" >> mobian-recipes/devices/whyred/image.yaml
@@ -82,7 +82,6 @@ jobs:
           echo "    file: whyred-rootfs.img" >> mobian-recipes/devices/whyred/image.yaml
           echo "    format: ext4" >> mobian-recipes/devices/whyred/image.yaml
           echo "    size: 2GB" >> mobian-recipes/devices/whyred/image.yaml
-
       - name: Build RootFS with Debos
         run: |
           sudo apt update
